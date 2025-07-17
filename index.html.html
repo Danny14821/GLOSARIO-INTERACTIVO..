@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glosario Jurídico Interactivo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-20px, -20px) rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .search-container {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .glossary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            padding: 30px;
+        }
+
+        .term-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .term-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .term-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .term-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .term-card.expanded {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .term-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .term-category {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .term-definition {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .term-examples {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 3px solid #667eea;
+        }
+
+        .term-examples h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .term-examples ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .term-examples li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .term-examples li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .related-terms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .related-term {
+            background: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .related-term:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+
+        .no-results h3 {
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .filter-buttons {
+                gap: 8px;
+            }
+
+            .glossary-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+
+            .term-card.expanded {
+                grid-column: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Glosario Jurídico Interactivo</h1>
+            <p>Explora conceptos fundamentales de derecho, tecnología y propiedad intelectual</p>
+        </div>
+
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="Buscar término..." id="searchInput">
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-category="all">Todos</button>
+                <button class="filter-btn" data-category="derecho">Derecho</button>
+                <button class="filter-btn" data-category="tecnologia">Tecnología</button>
+                <button class="filter-btn" data-category="propiedad">Propiedad Intelectual</button>
+            </div>
+        </div>
+
+        <div class="glossary-grid" id="glossaryGrid">
+            <!-- Los términos se generarán dinámicamente con JavaScript -->
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalTerms">17</div>
+                <div class="stat-label">Términos</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="visibleTerms">17</div>
+                <div class="stat-label">Visibles</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="categoriesCount">3</div>
+                <div class="stat-label">Categorías</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const glossaryData = [
+            {
+                term: "Información",
+                category: "derecho",
+                definition: "Conjunto de datos procesados y organizados que poseen significado y valor para quien los recibe. En el contexto jurídico, se refiere a datos que pueden ser objeto de derechos y obligaciones.",
+                examples: [
+                    "Información personal protegida por la ley de datos",
+                    "Información pública que debe ser transparente",
+                    "Información confidencial en contratos"
+                ],
+                related: ["Protección jurídica", "Derecho de petición"]
+            },
+            {
+                term: "Sistematización",
+                category: "derecho",
+                definition: "Proceso de organizar y estructurar elementos o normas de manera coherente y ordenada. En derecho, implica la organización lógica de las normas jurídicas en un sistema coherente.",
+                examples: [
+                    "Sistematización de códigos legales",
+                    "Organización de jurisprudencia",
+                    "Estructura de reglamentos administrativos"
+                ],
+                related: ["Régimen jurídico", "Marco constitucional"]
+            },
+            {
+                term: "Régimen jurídico",
+                category: "derecho",
+                definition: "Conjunto de normas, principios y reglas que regulan una materia específica o una institución particular dentro del ordenamiento jurídico de un Estado.",
+                examples: [
+                    "Régimen jurídico de las telecomunicaciones",
+                    "Régimen jurídico de la propiedad intelectual",
+                    "Régimen jurídico de los funcionarios públicos"
+                ],
+                related: ["Marco constitucional", "Normatividad internacional"]
+            },
+            {
+                term: "Marco constitucional",
+                category: "derecho",
+                definition: "Conjunto de principios, normas y disposiciones establecidas en la Constitución que sirven como fundamento y límite para el ejercicio del poder público y los derechos fundamentales.",
+                examples: [
+                    "Marco constitucional de los derechos humanos",
+                    "Fundamentos constitucionales de la libertad de expresión",
+                    "Principios constitucionales del debido proceso"
+                ],
+                related: ["Libertad de expresión", "Derecho de petición"]
+            },
+            {
+                term: "Libertad de expresión",
+                category: "derecho",
+                definition: "Derecho fundamental que garantiza la facultad de las personas para expresar sus ideas, opiniones y pensamientos sin censura previa, sujeto a las responsabilidades posteriores establecidas por la ley.",
+                examples: [
+                    "Libertad de prensa y medios de comunicación",
+                    "Derecho a la crítica y opinión pública",
+                    "Expresión artística y cultural"
+                ],
+                related: ["Marco constitucional", "Telecomunicaciones"]
+            },
+            {
+                term: "Derecho de petición",
+                category: "derecho",
+                definition: "Derecho fundamental que permite a toda persona dirigirse a las autoridades públicas para solicitar información, presentar quejas o requerir la adopción de decisiones administrativas.",
+                examples: [
+                    "Solicitud de información pública",
+                    "Petición de revisión de decisiones administrativas",
+                    "Requerimiento de servicios públicos"
+                ],
+                related: ["Información", "Marco constitucional"]
+            },
+            {
+                term: "Telecomunicaciones",
+                category: "tecnologia",
+                definition: "Transmisión de información a distancia mediante sistemas electrónicos, electromagnéticos u ópticos. Incluye servicios como telefonía, internet, televisión y radio.",
+                examples: [
+                    "Servicios de internet y banda ancha",
+                    "Telefonía móvil y fija",
+                    "Televisión por cable y satelital"
+                ],
+                related: ["Criptografía", "Régimen jurídico"]
+            },
+            {
+                term: "Protección jurídica",
+                category: "derecho",
+                definition: "Sistema de garantías legales que salvaguarda derechos, bienes o intereses legítimos de las personas frente a posibles violaciones o amenazas.",
+                examples: [
+                    "Protección de datos personales",
+                    "Protección de la propiedad intelectual",
+                    "Protección de consumidores"
+                ],
+                related: ["Información", "Derechos de autor"]
+            },
+            {
+                term: "Implicaciones",
+                category: "derecho",
+                definition: "Consecuencias, efectos o resultados que se derivan de una acción, decisión o situación jurídica. En derecho, se refiere a las consecuencias legales de actos o normativas.",
+                examples: [
+                    "Implicaciones legales de un contrato",
+                    "Consecuencias jurídicas de una reforma legal",
+                    "Efectos de una decisión judicial"
+                ],
+                related: ["Régimen jurídico", "Normatividad internacional"]
+            },
+            {
+                term: "Criptografía",
+                category: "tecnologia",
+                definition: "Técnica de proteger información mediante la transformación de datos en un formato que solo puede ser leído por quienes poseen la clave de descifrado correspondiente.",
+                examples: [
+                    "Cifrado de comunicaciones digitales",
+                    "Firmas digitales y certificados",
+                    "Protección de transacciones bancarias"
+                ],
+                related: ["Telecomunicaciones", "Protección jurídica"]
+            },
+            {
+                term: "Propiedad industrial",
+                category: "propiedad",
+                definition: "Rama de la propiedad intelectual que protege las creaciones aplicadas a la industria, incluyendo invenciones, marcas, diseños industriales y denominaciones de origen.",
+                examples: [
+                    "Patentes de invención",
+                    "Marcas comerciales",
+                    "Diseños industriales"
+                ],
+                related: ["Patentes", "Marcas"]
+            },
+            {
+                term: "Derechos de autor",
+                category: "propiedad",
+                definition: "Conjunto de prerrogativas morales y patrimoniales que la ley reconoce a los autores sobre sus obras literarias, artísticas o científicas, así como a sus herederos o derechohabientes.",
+                examples: [
+                    "Protección de obras literarias",
+                    "Derechos sobre composiciones musicales",
+                    "Protección de software y programas"
+                ],
+                related: ["Copyright", "Copyleft"]
+            },
+            {
+                term: "Marcas",
+                category: "propiedad",
+                definition: "Signos distintivos que identifican productos o servicios en el mercado, distinguiéndolos de los de la competencia. Pueden ser palabras, símbolos, colores o combinaciones de estos elementos.",
+                examples: [
+                    "Marcas comerciales de productos",
+                    "Marcas de servicios",
+                    "Marcas colectivas y de certificación"
+                ],
+                related: ["Propiedad industrial", "Patentes"]
+            },
+            {
+                term: "Patentes",
+                category: "propiedad",
+                definition: "Títulos de propiedad industrial que otorgan a su titular el derecho exclusivo de explotar una invención por un período determinado, a cambio de revelar públicamente la invención.",
+                examples: [
+                    "Patentes de invención tecnológica",
+                    "Patentes farmacéuticas",
+                    "Patentes de software"
+                ],
+                related: ["Propiedad industrial", "Marcas"]
+            },
+            {
+                term: "Copyright",
+                category: "propiedad",
+                definition: "Sistema anglosajón de protección de derechos de autor que otorga al titular derechos exclusivos sobre la reproducción, distribución y comunicación pública de obras originales.",
+                examples: [
+                    "Copyright en obras cinematográficas",
+                    "Protección de contenido digital",
+                    "Derechos sobre publicaciones"
+                ],
+                related: ["Derechos de autor", "Copyleft"]
+            },
+            {
+                term: "Copyleft",
+                category: "propiedad",
+                definition: "Método de hacer que un programa o trabajo sea libre, requiriendo que todas las versiones modificadas y extendidas del mismo también sean libres bajo los mismos términos.",
+                examples: [
+                    "Licencias GPL para software",
+                    "Creative Commons con copyleft",
+                    "Obras culturales con licencia libre"
+                ],
+                related: ["Copyright", "Derechos de autor"]
+            },
+            {
+                term: "Normatividad internacional",
+                category: "derecho",
+                definition: "Conjunto de normas, tratados, convenios y acuerdos internacionales que regulan las relaciones entre Estados y establecen estándares comunes en diversas materias.",
+                examples: [
+                    "Tratados de libre comercio",
+                    "Convenios de propiedad intelectual",
+                    "Acuerdos de derechos humanos"
+                ],
+                related: ["Régimen jurídico", "Implicaciones"]
+            }
+        ];
+
+        let filteredData = [...glossaryData];
+        let expandedCard = null;
+
+        function renderGlossary() {
+            const grid = document.getElementById('glossaryGrid');
+            
+            if (filteredData.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <h3>No se encontraron resultados</h3>
+                        <p>Intenta con otros términos de búsqueda</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filteredData.map(item => `
+                <div class="term-card" data-term="${item.term}" onclick="toggleCard(this)">
+                    <div class="term-title">
+                        ${item.term}
+                        <span class="term-category">${getCategoryLabel(item.category)}</span>
+                    </div>
+                    <div class="term-definition">${item.definition}</div>
+                    <div class="term-examples">
+                        <h4>Ejemplos:</h4>
+                        <ul>
+                            ${item.examples.map(example => `<li>${example}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="related-terms">
+                        ${item.related.map(related => `<span class="related-term" onclick="event.stopPropagation(); searchTerm('${related}')">${related}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            updateStats();
+        }
+
+        function getCategoryLabel(category) {
+            const labels = {
+                'derecho': 'Derecho',
+                'tecnologia': 'Tecnología',
+                'propiedad': 'Propiedad Intelectual'
+            };
+            return labels[category] || category;
+        }
+
+        function toggleCard(card) {
+            const allCards = document.querySelectorAll('.term-card');
+            
+            if (expandedCard === card) {
+                card.classList.remove('expanded');
+                expandedCard = null;
+            } else {
+                allCards.forEach(c => c.classList.remove('expanded'));
+                card.classList.add('expanded');
+                expandedCard = card;
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function filterByCategory(category) {
+            if (category === 'all') {
+                filteredData = [...glossaryData];
+            } else {
+                filteredData = glossaryData.filter(item => item.category === category);
+            }
+            
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                filteredData = filteredData.filter(item => 
+                    item.term.toLowerCase().includes(searchTerm) ||
+                    item.definition.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            renderGlossary();
+        }
+
+        function searchTerm(term) {
+            document.getElementById('searchInput').value = term;
+            filteredData = glossaryData.filter(item => 
+                item.term.toLowerCase().includes(term.toLowerCase()) ||
+                item.definition.toLowerCase().includes(term.toLowerCase())
+            );
+            renderGlossary();
+        }
+
+        function updateStats() {
+            document.getElementById('visibleTerms').textContent = filteredData.length;
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const activeCategory = document.querySelector('.filter-btn.active').getAttribute('data-category');
+            
+            if (activeCategory === 'all') {
+                filteredData = glossaryData;
+            } else {
+                filteredData = glossaryData.filter(item => item.category === activeCategory);
+            }
+            
+            if (searchTerm) {
+                filteredData = filteredData.filter(item => 
+                    item.term.toLowerCase().includes(searchTerm) ||
+                    item.definition.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            renderGlossary();
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                filterByCategory(this.getAttribute('data-category'));
+            });
+        });
+
+        // Inicializar
+        renderGlossary();
+    </script>
+</body>
+</html>
